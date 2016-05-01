@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html ng-app = "tweeter">
+<head>
+	<title>Tweeter</title>
+	<script type="text/javascript" src = "https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.2/angular.min.js"></script>
+	<script type="text/javascript" src = "https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.5/angular-mocks.js"></script>
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
+	<style type="text/css">
+		html, body{
+			margin: 0;
+			padding: 0;
+			background-color: #F0F0F0;
+		}
+		.container{
+			width: 100%;
+		}
+		.myWell{
+			width: 100%;
+			height: 200px;
+			background-color: #5c85d6; 
+		}
+		.navbar{
+			width: 100%;
+			margin: 0 auto;
+			background-color: white;
+			height: 55px;
+			position: relative;
+		}
+
+		.nav-item{
+			position: absolute;
+			bottom: 5px;
+			left: 0;
+		}
+
+		.logo{
+			width: 30px;
+			height: 40px;
+			margin-left: 2%;
+		}
+
+		.link{
+			margin-left: 8%;
+			font-size: 16px;
+			font-weight: bold;
+			color: #5c85d6;
+		}
+
+		.profile{
+			border: 3px solid white;
+			width: 200px;
+			height: 200px;
+			margin-top: 4%;
+			margin-left: 10%;
+			z-index: 5;
+		}
+
+		.content{
+			width: 100%;
+			background-color: #F0F0F0;
+			height: 100%;
+		}
+
+		.section{
+			float: left;
+		}
+
+		.about{
+			width: 25%;
+			height: 100%;
+			position: relative;
+			z-index: 1;
+			margin-left: 5%;
+		}
+
+		.tweets{
+			width: 75%;
+			height: 100%;
+			position: relative;
+			z-index: 1;
+			background-color: white;
+			box-shadow: 1px 2px 2px 2px #CCC;
+			margin-left: 5%;
+			margin-top: .5%;
+			padding: 20px;
+		}
+
+		#tweets{
+			font-size: 18px;
+		}
+
+		.buttons{
+			float: right;
+			margin-top: 1%;
+			margin-right: 14%;
+		}
+
+		.icon{
+			color: #5c85d6;
+		}
+
+		.summary{
+			color: #5c85d6;
+			font-size: 25px;
+			text-align: center;
+		}
+
+	</style>
+</head>
+<body>
+	<!-- Nav Bar -->
+	<div class = "navbar">
+			<img src="tweeterlogo.jpg" class = "nav-item logo">	
+			<a href="#" class = "nav-item link"><span class = "glyphicon glyphicon-home"></span> Home</a>
+			<a href="#" class = "nav-item link" style = "margin-left: 16%;"><span class = "glyphicon glyphicon-user"></span> Profile</a>
+			<a href="#" class = "nav-item link" style = "margin-left: 92%;"><span class = "glyphicon glyphicon-off"></span> Login</a>
+	</div>
+	<div class = "myWell">
+		<img src="profile.png" class = "profile">
+	</div>		
+	<div class = "content">
+		<div class = "section about">	
+			<br/><br/><br/><br/><br/><br/>
+			<div class="panel panel-default">
+				<div class="panel-body">
+			    	@myProfile <br/><br/>
+			    This is my about me section! <br/> I rock at angularjs!<br/><br/>
+			    	<span class = "icon glyphicon glyphicon-map-marker"></span> San Diego, CA<br/>
+			    	<span class = "icon glyphicon glyphicon-calendar"></span> Joined March, 2016
+				</div>
+			</div>			
+		</div>
+		<div class = "buttons">
+			<button class = "btn btn-default"><span class = "icon glyphicon glyphicon-plus"></span> Follow</button>			
+		</div>
+		<div class = "section" style = "width: 70%; height: 100%;" ng-controller = "tweetCtrl">
+			<br/><br/><br/>
+			<div class = "tweets">
+				<div class = "summary">
+					Tweets: 500  | 	Likes: 54	| Followers: 10
+				</div>
+				<br/><br/>
+				<div id = "tweets">
+					<div class="panel panel-default" ng-repeat = "tweet in tweets">
+						<div class="panel-body">
+							<div class = "tweet-text">
+								{{tweet.text}}
+							</div>
+							<br/>
+							<div class = "tweet-actions">
+								<span class = "icon glyphicon glyphicon-retweet"></span> {{tweet.retweets}}
+								<span class = "icon glyphicon glyphicon-thumbs-up"></span> {{tweet.likes}}
+							</div>
+						</div>
+					</div>						
+				</div>
+			</div>
+		</div>
+	</div>	
+	<div style = "float: none; clear:both; width:100%;"></div>
+</body>
+<script type="text/javascript">
+	var app = angular.module('tweeter', ['ngMockE2E']);
+
+	app.run(function($httpBackend){
+		//Fake HTTP REST service using $httpBackend to mock it up
+		var tweets = [
+			{
+				text 		: 'This is my first tweet',
+				likes 		: 41,
+				retweets	: 13
+			},
+			{
+				text 		: 'Have you tried Tweeter? SO MUCH BETTER THAN TWITTER! ZOMG!',
+				likes 		: 233,
+				retweets 	: 4
+			}
+		];	
+
+		$httpBackend.whenGET('/tweets').respond(function(method, url, data){
+			return [200, tweets, {}];
+		});
+	});
+
+	app.service('TweetService', function($http, $q){
+		this.get = function(){
+			var deferred = $q.defer();
+			$http({
+				url : '/tweets'
+			})
+			.success(function(response){
+				return deferred.resolve(response);
+			})
+			.error(function(err){
+				return deferred.reject(err);
+			});
+
+			return deferred.promise;
+		};
+	});
+
+	app.controller('tweetCtrl', function($scope, TweetService){
+		'use strict';
+		TweetService.get().then(function(tweets){
+			$scope.tweets = tweets;
+		});
+	});
+
+</script>
+</html>
